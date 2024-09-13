@@ -9,12 +9,18 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    
+    enum NetworkError: Error {
+        case badUrl
+        case other(String)
+        case invalidResponse
+    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
+    
+    
 
 
 }
