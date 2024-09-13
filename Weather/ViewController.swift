@@ -9,18 +9,14 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    enum NetworkError: Error {
-        case badUrl
-        case other(String)
-        case invalidResponse
-    }
+    private var apiCall = ApiCall()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        apiCall.getApiData()
     }
-    
-    
 
 
 }
