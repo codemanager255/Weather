@@ -15,7 +15,12 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        apiCall.getApiData()
+        Task {
+            if let weatherData = await apiCall.getApiData(for: "Atlanta") {
+                print(weatherData)
+            }
+            print("Failed to fetch data from the API")
+        }
     }
 
 
