@@ -8,7 +8,10 @@ enum ApiError: Error {
 
 class ApiCall {
     
+Network-Call
     private var apiKey = ApiKey()
+
+main
     
     func getApiData(for city: String) async -> WeatherData? {
         do {
