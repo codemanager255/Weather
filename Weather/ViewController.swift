@@ -18,11 +18,10 @@ class ViewController: UIViewController {
         Task {
             if let weatherData = await apiCall.getApiData(for: "Atlanta") {
                 print(weatherData)
+            } else {
+                print("Failed to fetch data from the API")
             }
-            print("Failed to fetch data from the API")
         }
     }
-
-
 }
 

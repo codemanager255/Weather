@@ -8,14 +8,14 @@ enum ApiError: Error {
 
 class ApiCall {
     
-    private let apiKey = ApiKey()
+    private var apiKey = ApiKey()
     
     func getApiData(for city: String) async -> WeatherData? {
         do {
             let data = try await callApi(for: city)
             return data
         } catch {
-            print("Error in fetching data from API:", error.localizedDescription)
+            print(error.localizedDescription)
             return nil
         }
     }
