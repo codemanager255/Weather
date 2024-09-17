@@ -8,7 +8,6 @@ enum ApiError: Error {
 
 class ApiCall {
     
-    var dataObj: WeatherData?
     
     func getApiData() {
         Task {
