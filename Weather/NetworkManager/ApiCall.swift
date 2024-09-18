@@ -7,43 +7,34 @@ enum ApiError: Error {
 }
 
 class ApiCall {
+    private var apiKey = ApiKey()
     
-    var dataObj: WeatherData?
-    
-    func getApiData() {
-        Task {
-            let result = await callApi()
-            switch result {
-            case .success(let data):
-                self.dataObj = data
-                print("Data fetched successfully:", data)
-            case .failure(let err):
-                print("Error in fetching data from API:", err.localizedDescription)
-            }
+    func getApiData(for city: String) async -> WeatherData? {
+        do {
+            let data = try await callApi(for: city)
+            return data
+        } catch {
+            print(error.localizedDescription)
+            return nil
         }
     }
     
-    private func callApi() async -> Result<WeatherData, Error> {
-        let apiKey = "138111086d989400c27883397852247e"
-        let apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=Atlanta&appid=138111086d989400c27883397852247e"
+    private func callApi(for city: String) async throws -> WeatherData {
+        let apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(apiKey.apiId)"
         
         guard let url = URL(string: apiUrl) else {
-            return .failure(ApiError.invalidUrl)
+            throw ApiError.invalidUrl
         }
         
         let urlSession = URLSession.shared
         
-        do {
-            let (data, response) = try await urlSession.data(from: url)
-            guard let _response = response as? HTTPURLResponse, _response.statusCode == 200 else {
-                throw ApiError.invalidResponse
-            }
-            let decoder = JSONDecoder()
-            let allData = try decoder.decode(WeatherData.self, from: data)
-            return .success(allData)
-        } catch {
-            print(error.localizedDescription)
-            return .failure(ApiError.other(error.localizedDescription))
+        let (data, response) = try await urlSession.data(from: url)
+        guard let _response = response as? HTTPURLResponse, _response.statusCode == 200 else {
+            throw ApiError.invalidResponse
         }
+        
+        let decoder = JSONDecoder()
+        let allData = try decoder.decode(WeatherData.self, from: data)
+        return allData
     }
 }
