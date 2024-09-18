@@ -13,6 +13,8 @@ class WeatherDisplayVC: UIViewController {
     
     
     // MARK: - Views
+    
+    // MARK: - - Background
     private lazy var backgroundImage: UIImageView = {
         let iv = UIImageView()
         iv.image = UIImage(named: "clear_sky_background_day")
@@ -21,6 +23,7 @@ class WeatherDisplayVC: UIViewController {
         return iv
     }()
     
+    // MARK: - - Main Weather Display
     private lazy var weatherVStack: UIStackView = {
         let vs = UIStackView(arrangedSubviews: [
             locationLabel,
@@ -91,9 +94,11 @@ class WeatherDisplayVC: UIViewController {
         return lbl
     }()
     
+    // MARK: - - Feels Like & Visibility
+    
     private lazy var feelsLikeView: UIView = {
         let flv = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: view.frame.width/2 - 50, height: view.frame.width/2 - 50)))
-        flv.backgroundColor = .clear
+        flv.backgroundColor = .white.withAlphaComponent(0.5)
         flv.layer.cornerRadius = 10
         return flv
     }()
@@ -119,15 +124,17 @@ class WeatherDisplayVC: UIViewController {
     
 
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         // Do any additional setup after loading the view.
         setupUI()
     }
-
+    
     
     // MARK: - Methods
+    
     func setupUI() {
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.isHidden = true
