@@ -9,15 +9,19 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    private var apiCall = ApiCall()
+//    private var apiCall = ApiCall()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        apiCall.getApiData()
+//        Task {
+//            if let weatherData = await apiCall.getApiData(for: "Atlanta") {
+//                print(weatherData)
+//            } else {
+//                print("Failed to fetch data from the API")
+//            }
+//        }
     }
-
-
 }
 
