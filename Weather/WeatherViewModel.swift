@@ -6,19 +6,24 @@
 //
 
 import UIKit
+import Combine
 protocol WeatherViewModelProtocol {
     
     func getApiData() throws
     func handleApiData()
-    func passDataToView(data: Data)
     func kelvinToCelcius(kelvin: Double) -> Double
     func kelvinToFarenheit(kelvin: Double) -> Double
 }
 
 class WeatherViewModel: WeatherViewModelProtocol {
 
-    var weatherData: [WeatherData]?
-    var networkManager: NetworkManager?
+    @Published var weatherData: WeatherData?
+    
+    var networkManager: ApiCall
+    
+    init(networkManager: ApiCall) {
+        self.networkManager = networkManager
+    }
     
     enum Errors: Error {
         case noData
@@ -28,21 +33,11 @@ class WeatherViewModel: WeatherViewModelProtocol {
     @MainActor
     func getApiData() throws {
         Task {
-            do {
-                weatherData = try await networkManager.get(model: [WeatherData].self)
-            } catch {
-                print(error.localizedDescription)
-                throw Errors.noData
-            }
+            weatherData = await networkManager.getApiData(for: "")
         }
     }
     
     func handleApiData() {
-        WeatherViewController.weatherData = weatherData
-    }
-    
-    func passDataToView(data: Data) {
-        
     }
     
     func kelvinToFarenheit(kelvin: Double) -> Double {
