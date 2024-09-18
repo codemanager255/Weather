@@ -15,6 +15,7 @@ class WeatherDisplayVC: UIViewController {
     // MARK: - Views
     
     // MARK: - - Background
+
     private lazy var backgroundImage: UIImageView = {
         let iv = UIImageView()
         iv.image = UIImage(named: "clear_sky_background_day")
@@ -24,6 +25,7 @@ class WeatherDisplayVC: UIViewController {
     }()
     
     // MARK: - - Main Weather Display
+
     private lazy var weatherVStack: UIStackView = {
         let vs = UIStackView(arrangedSubviews: [
             locationLabel,
@@ -124,7 +126,7 @@ class WeatherDisplayVC: UIViewController {
     
 
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         

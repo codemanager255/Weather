@@ -6,24 +6,23 @@
 //
 
 import UIKit
+import Combine
 protocol WeatherViewModelProtocol {
     
     func getApiData() throws
     func handleApiData()
-    func passDataToView(data: Data)
     func kelvinToCelcius(kelvin: Double) -> Double
     func kelvinToFarenheit(kelvin: Double) -> Double
 }
 
 class WeatherViewModel: WeatherViewModelProtocol {
-    var weatherData: [WeatherData]?
+
+    @Published var weatherData: WeatherData?
     
     var networkManager: ApiCall
     
-    init(weatherData: [WeatherData]? = nil, networkManager: ApiCall, apiURL: String) {
-        self.weatherData = weatherData
+    init(networkManager: ApiCall) {
         self.networkManager = networkManager
-        self.apiURL = apiURL
     }
     
     enum Errors: Error {
@@ -31,17 +30,14 @@ class WeatherViewModel: WeatherViewModelProtocol {
     }
     
     var apiURL: String = ""
-    
-//    func getApiData() -> [WeatherData] {
-//        return weatherData
-//    }
-    
-    func handleApiData() {
-        
+    @MainActor
+    func getApiData() throws {
+        Task {
+            weatherData = await networkManager.getApiData(for: "")
+        }
     }
     
-    func passDataToView(data: [WeatherData]) {
-        
+    func handleApiData() {
     }
     
     func kelvinToFarenheit(kelvin: Double) -> Double {
