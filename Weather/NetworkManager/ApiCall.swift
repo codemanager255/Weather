@@ -7,8 +7,7 @@ enum ApiError: Error {
 }
 
 class ApiCall {
-    
-    //private var apiKey = ApiKey()
+    private var apiKey = ApiKey()
     
     func getApiData(for city: String) async -> WeatherData? {
         do {
@@ -21,8 +20,7 @@ class ApiCall {
     }
     
     private func callApi(for city: String) async throws -> WeatherData {
-        let apiKey = ""
-        let apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(apiKey)"
+        let apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=\(city)&appid=\(apiKey.apiId)"
         
         guard let url = URL(string: apiUrl) else {
             throw ApiError.invalidUrl
