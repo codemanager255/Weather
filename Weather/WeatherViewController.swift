@@ -7,9 +7,8 @@
 
 import UIKit
 
-class ViewController: UIViewController {
-    
-//    private var apiCall = ApiCall()
+class WeatherViewController: UIViewController {
+    static var weatherData: [WeatherData]?
 
     override func viewDidLoad() {
         super.viewDidLoad()
