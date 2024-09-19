@@ -8,14 +8,14 @@
 import UIKit
 import Combine
 protocol WeatherViewModelProtocol {
-    
-    func getApiData() throws
-    func handleApiData()
-    func kelvinToCelcius(kelvin: Double) -> Double
-    func kelvinToFarenheit(kelvin: Double) -> Double
+    func getApiData(city: String) throws
+    func getCityFromUI(weatherView: WeatherDisplayVC)
+    func kelvinToCelcius(kelvin: Double) -> Int
+    func kelvinToFarenheit(kelvin: Double) -> Int
 }
 
 class WeatherViewModel: WeatherViewModelProtocol {
+    
 
     @Published var weatherData: WeatherData?
     
@@ -31,21 +31,27 @@ class WeatherViewModel: WeatherViewModelProtocol {
     
     var apiURL: String = ""
     @MainActor
-    func getApiData() throws {
+    func getApiData(city: String) throws {
         Task {
-            weatherData = await networkManager.getApiData(for: "")
+            weatherData = await networkManager.getApiData(for: city)
         }
     }
     
-    func handleApiData() {
+    @MainActor func getCityFromUI(weatherView: WeatherDisplayVC) {
+        let city = weatherView.searchBar.text ?? "no city"
+        do {
+            try getApiData(city: city)
+        } catch {
+            print(error.localizedDescription)
+        }
     }
     
-    func kelvinToFarenheit(kelvin: Double) -> Double {
-        var celcius = kelvinToCelcius(kelvin: kelvin)
-        return ((9/5) * celcius + 32)
+    func kelvinToFarenheit(kelvin: Double) -> Int {
+        let celcius = kelvinToCelcius(kelvin: kelvin)
+        return Int(((celcius * 9) / 5) + 32)
     }
     
-    func kelvinToCelcius(kelvin: Double) -> Double {
-        return kelvin - 273.15
+    func kelvinToCelcius(kelvin: Double) -> Int {
+        return Int(kelvin - 273.15)
     }
 }
