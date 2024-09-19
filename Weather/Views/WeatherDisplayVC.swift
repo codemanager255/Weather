@@ -6,11 +6,12 @@
 //
 
 import UIKit
+import Combine
 
 class WeatherDisplayVC: UIViewController {
     // MARK: - Properties
-    //private let vm = ViewModel()
-    
+    private let vm = WeatherViewModel(networkManager: ApiCall())
+    private var weatherDataCancellable: AnyCancellable?
     
     // MARK: - Views
     
@@ -22,6 +23,15 @@ class WeatherDisplayVC: UIViewController {
         iv.contentMode = .scaleAspectFill
         iv.translatesAutoresizingMaskIntoConstraints = false
         return iv
+    }()
+    
+    // MARK: - - SearchBar
+    
+    private lazy var searchBar: UISearchBar = {
+        let sb = UISearchBar()
+        sb.delegate = self
+        sb.placeholder = "Atlanta"
+        return sb
     }()
     
     // MARK: - - Main Weather Display
@@ -42,7 +52,7 @@ class WeatherDisplayVC: UIViewController {
     
     private lazy var locationLabel: UILabel = {
         let lbl = UILabel()
-        lbl.text = "Atlanta"
+        lbl.text = "Unknown"
         lbl.font = .systemFont(ofSize: 30, weight: .regular)
         lbl.shadowColor = .black
         lbl.textColor = .white
@@ -51,7 +61,7 @@ class WeatherDisplayVC: UIViewController {
     
     private lazy var degreesLabel: UILabel = {
         let lbl = UILabel()
-        lbl.text = "82°"
+        lbl.text = "N/A"
         lbl.font = .systemFont(ofSize: 60, weight: .thin)
         lbl.shadowColor = .black
         lbl.textColor = .white
@@ -60,7 +70,7 @@ class WeatherDisplayVC: UIViewController {
     
     private lazy var skyLabel: UILabel = {
         let lbl = UILabel()
-        lbl.text = "Mostly Cloudy"
+        lbl.text = "Unavailable"
         lbl.textColor = .white
         lbl.font = .systemFont(ofSize: 15, weight: .semibold)
         lbl.shadowColor = .black
@@ -80,7 +90,7 @@ class WeatherDisplayVC: UIViewController {
     
     private lazy var highDegreesLabel: UILabel = {
         let lbl = UILabel()
-        lbl.text = "H:82°"
+        lbl.text = "H: "
         lbl.textColor = .white
         lbl.font = .systemFont(ofSize: 15, weight: .semibold)
         lbl.shadowColor = .black
@@ -89,7 +99,7 @@ class WeatherDisplayVC: UIViewController {
     
     private lazy var lowDegreesLabel: UILabel = {
         let lbl = UILabel()
-        lbl.text = "L:63°"
+        lbl.text = "L: "
         lbl.textColor = .white
         lbl.font = .systemFont(ofSize: 15, weight: .semibold)
         lbl.shadowColor = .black
@@ -99,16 +109,73 @@ class WeatherDisplayVC: UIViewController {
     // MARK: - - Feels Like & Visibility
     
     private lazy var feelsLikeView: UIView = {
-        let flv = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: view.frame.width/2 - 50, height: view.frame.width/2 - 50)))
-        flv.backgroundColor = .white.withAlphaComponent(0.5)
-        flv.layer.cornerRadius = 10
+        let flv = UIView()
+        flv.addSubview(feelsLikeContentVStack)
+        flv.backgroundColor = .systemBlue.withAlphaComponent(0.3)
+        flv.layer.cornerRadius = 15
         return flv
     }()
     
+    private lazy var feelsLikeContentVStack: UIStackView = {
+        let vs = UIStackView(arrangedSubviews: [
+            self.feelsLikeTitleHStack,
+            self.feelsLikeTempLabel,
+            self.feelsLikeDescriptionLabel
+        ])
+        vs.axis = .vertical
+        vs.alignment = .leading
+        vs.distribution = .fillProportionally
+        vs.translatesAutoresizingMaskIntoConstraints = false
+        return vs
+    }()
+    
+    private lazy var feelsLikeTitleHStack: UIStackView = {
+        let icon = UIImageView(image: UIImage(systemName: "thermometer.medium"))
+        icon.tintColor = .white
+        let hs = UIStackView(arrangedSubviews: [
+            icon,
+            feelsLikeTitleLabel
+        ])
+        hs.axis = .horizontal
+        hs.alignment = .leading
+        hs.spacing = 5
+        hs.distribution = .fillProportionally
+        hs.translatesAutoresizingMaskIntoConstraints = false
+        return hs
+    }()
+    
+    private lazy var feelsLikeTitleLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "FEELS LIKE"
+        lbl.font = .systemFont(ofSize: 15, weight: .semibold)
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        lbl.textColor = .white
+        return lbl
+    }()
+    
+    private lazy var feelsLikeTempLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "N/A"
+        lbl.font = .systemFont(ofSize: 50, weight: .thin)
+        lbl.textColor = .white
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
+    
+    private lazy var feelsLikeDescriptionLabel: UILabel = {
+        let lbl = UILabel()
+        lbl.text = "N/A"
+        lbl.textColor = .white
+        lbl.font = .systemFont(ofSize: 15)
+        lbl.numberOfLines = 0
+        lbl.translatesAutoresizingMaskIntoConstraints = false
+        return lbl
+    }()
+    
     private lazy var visibilityView: UIView = {
-        let vv = UIView(frame: CGRect(origin: CGPointZero, size: CGSize(width: view.frame.width/2 - 50, height: view.frame.width/2 - 50)))
-        vv.backgroundColor = .systemFill
-        vv.layer.cornerRadius = 10
+        let vv = UIView()
+        vv.backgroundColor = .systemBlue.withAlphaComponent(0.3)
+        vv.layer.cornerRadius = 15
         return vv
     }()
     
@@ -132,6 +199,8 @@ class WeatherDisplayVC: UIViewController {
         
         // Do any additional setup after loading the view.
         setupUI()
+        updateUIFields()
+        do { try vm.getApiData() } catch { displayErrorAlert(error: error) }
     }
     
     
@@ -158,9 +227,48 @@ class WeatherDisplayVC: UIViewController {
         view.addSubview(feelsVisHStack)
         NSLayoutConstraint.activate([
             feelsVisHStack.topAnchor.constraint(equalTo: weatherVStack.bottomAnchor, constant: 50),
-            feelsVisHStack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            feelsVisHStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            feelsVisHStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            feelsVisHStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            feelsVisHStack.heightAnchor.constraint(equalToConstant: view.frame.width / 2 - 20)
         ])
         
+        NSLayoutConstraint.activate([
+            feelsLikeContentVStack.topAnchor.constraint(equalTo: feelsLikeView.topAnchor, constant: 10),
+            feelsLikeContentVStack.trailingAnchor.constraint(equalTo: feelsLikeView.trailingAnchor, constant: -10),
+            feelsLikeContentVStack.leadingAnchor.constraint(equalTo: feelsLikeView.leadingAnchor, constant: 10),
+            feelsLikeContentVStack.bottomAnchor.constraint(equalTo: feelsLikeView.bottomAnchor, constant: -10)
+        ])
+    }
+    
+    func displayErrorAlert(error: Error) {
+        let alert = UIAlertController(title: "Error", message: String(describing: error), preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .cancel))
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func updateUIFields() {
+        weatherDataCancellable = vm.$weatherData.sink(receiveValue: { weatherData in
+            guard let _weatherData = weatherData else {return}
+            self.locationLabel.text = _weatherData.name
+            self.degreesLabel.text = "\(Int(self.vm.kelvinToFarenheit(kelvin: _weatherData.main.temp)))°"
+            self.skyLabel.text = _weatherData.weather.first?.description.capitalized
+            self.highDegreesLabel.text = "H:\(Int(self.vm.kelvinToFarenheit(kelvin: _weatherData.main.tempMax)))°"
+            self.lowDegreesLabel.text = "L:\(Int(self.vm.kelvinToFarenheit(kelvin: _weatherData.main.tempMin)))°"
+            self.feelsLikeTempLabel.text = "\(Int(self.vm.kelvinToFarenheit(kelvin: _weatherData.main.feelsLike)))°"
+            
+            if _weatherData.main.temp < _weatherData.main.feelsLike {
+                self.feelsLikeDescriptionLabel.text = "Humidity is making it feel hotter."
+            } else { self.feelsLikeDescriptionLabel.text = "It feels cooler than it is."}
+        })
     }
 }
 
+
+// MARK: - Extensions
+
+extension WeatherDisplayVC: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // TODO: implement update on weather data for search result
+    }
+}
