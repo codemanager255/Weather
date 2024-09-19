@@ -260,7 +260,7 @@ class WeatherDisplayVC: UIViewController {
     
     // MARK: - Methods
     
-    func setupUI() {
+    private func setupUI() {
         view.backgroundColor = .systemBackground
         navigationController?.navigationBar.isHidden = true
         
@@ -305,13 +305,13 @@ class WeatherDisplayVC: UIViewController {
         ])
     }
     
-    func displayErrorAlert(error: Error) {
+    private func displayErrorAlert(error: Error) {
         let alert = UIAlertController(title: "Error", message: String(describing: error), preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ok", style: .cancel))
         self.present(alert, animated: true, completion: nil)
     }
     
-    func updateUIFields() {
+    private func updateUIFields() {
         weatherDataCancellable = vm.$weatherData.sink(receiveValue: { weatherData in
             guard let _weatherData = weatherData else {return}
             self.locationLabel.text = _weatherData.name
