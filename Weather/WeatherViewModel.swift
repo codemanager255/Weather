@@ -33,7 +33,8 @@ class WeatherViewModel: WeatherViewModelProtocol {
     @MainActor
     func getApiData() throws {
         Task {
-            weatherData = await networkManager.getApiData(for: "")
+            weatherData = await networkManager.getApiData(for: "Atlanta")
+            print(weatherData)
         }
     }
     
